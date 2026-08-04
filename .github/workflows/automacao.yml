@@ -1,0 +1,40 @@
+name: Execução diária do robô
+
+on:
+  schedule:
+    - cron: '0 10 * * *' # Executa todos os dias às 10:00 AM"
+  workflow_dispatch:
+
+jobs:
+  executar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: clonar repositório
+        uses: actions/checkout@v3
+
+      - name: setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: executar robô
+        run: python robô.py
+
+      - name: Commit do relatório
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add dados/relatorio.csv
+          git commit -m "Atualização diária" || echo "sem mudanças para commitar"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      
+  
